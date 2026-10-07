@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-09-12
+last_updated: 2026-10-07
 status: active
 description: The review catalog pattern — a named catalog of checks a reader walks against changed notes, with errors that block the merge and warnings that advise.
 tags: [validation, review, catalog, contract]
-version: 1.3
+version: 1.4
 related:
 - 02-document-contract
 - 03-lifecycle-and-generated-files
@@ -92,9 +92,51 @@ A minimum viable review is the two protocols:
 [../protocols/bootstrap-protocol.md](../protocols/bootstrap-protocol.md) walks the corpus.
 No tools required; a shared vocabulary of check names is the whole machinery.
 
-The catalog also has a machine walk: root `validate.js` — run `node validate.js`. Findings print
-as `path:line — check-name: message`; exit code 1 on errors; `--write` regenerates the generated
-regions, write-if-diff. The protocols remain the minimum no-tool path.
+The methodology-reference corpus has a machine walk: root
+[`validate.js`](../validate.js) — run `node validate.js`. Its root is the script directory
+(`__dirname`), regardless of working directory. Findings print as
+`path:line — check-name: message`; exit code 1 on errors; the only accepted option,
+`--write`, regenerates existing root `index.md` and `tag-index.md` regions, write-if-diff.
+Unknown options, including `--root`, fail before reads or writes. These file classes describe
+**this methodology repo**, not the consumer layout; copying consumer docs does not make this
+validator applicable. The protocols remain the minimum no-tool path.
+
+### Consumer-layout subset checker (not full catalog parity)
+
+From the methodology checkout, run
+`node validate-consumer.js --root <consumer-repository>`. Elsewhere, use the actual available
+path: `node "<methodology-checkout>/validate-consumer.js" --root <consumer-repository>`.
+Do not assume bootstrap copied the script into the consumer. The separate
+[`validate-consumer.js`](../validate-consumer.js) is zero-dependency and strictly read-only:
+it never changes generated regions and rejects `--write`, omitted roots and unknown arguments
+(CLI misuse exits 2; validation or infrastructure failure exits 1).
+
+- **Scan boundary:** required `docs/project.md`; Markdown recursively within optional
+  `docs/context/` and `docs/protocols/`; optional canonical `docs/tag-index.md`. Missing optional
+  directories are allowed during bootstrap, not evidence of full documentation coverage. A link
+  to an absent directory or file still fails. It does not walk `src/`, `node_modules/` or the
+  rest of the repository, and skips `.git`/`node_modules` within documentation trees.
+- **Contracts:** entry point = context metadata plus `doc_language`, with the nine exact H2
+  sections in 06's order; strategic context docs = 02 §4 metadata; procedures = 02 §1 note
+  metadata. Missing H1 is advisory. The generated tag index has no frontmatter obligation.
+  The parser supports simple scalar, inline-list and block-list frontmatter, not general YAML;
+  malformed/unsupported syntax, duplicate keys, blank optional keys and wrong types fail.
+- **Navigation and links:** every scanned strategic/procedure doc needs a direct entry-point
+  navigation reference. Relative Markdown links are file-relative; bare `docs/...` paths in
+  Context Index/Common Lookups and Slices Entry points are repository-relative. Targets must
+  exist with exact casing. `related` and wikilinks resolve scanned ids/stems/aliases
+  case-insensitively; fenced examples are exempt, inline code exempts wikilinks only, as above.
+  Paths cannot be absolute or escape the consumer root, including through symlinks; symlinks
+  within scanned documentation trees are reported and not traversed.
+- **Not checked:** heading-fragment existence/collisions, general Markdown syntax, full YAML,
+  note body-class anatomy, naming/duplicate-id/alias collisions, hub/orphan graph rules,
+  generated-index freshness, secret detection, near duplicates or semantic project accuracy.
+  Anchor/collision validation remains deferred; file existence does not certify an anchor.
+  External links are not fetched. A zero-error result certifies only this subset — continue
+  the manual catalog walk for the rest, including navigation anchors.
+
+This checker adds no schema changes or runtime enforcement. Its regression suite is
+`node --test validate-consumer.test.js`, with isolated temporary consumer fixtures.
 
 ## Common mistakes
 

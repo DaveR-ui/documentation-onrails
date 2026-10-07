@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * validate.js — C1 minimum-viable validator for a DocumentationAsAService corpus.
+ * validate.js — C1 minimum-viable validator for this methodology-reference corpus.
  *
  * Plain, zero-dependency Node.js (CommonJS). No package.json, no npm install.
  *
@@ -21,6 +21,8 @@
  * even when backticked (the anti-smuggling rule), and secret scanning keeps
  * the fenced-blocks-only exemption (inline code can still hide a secret).
  *
+ * ROOT is always __dirname, not the working directory or a consumer --root.
+ * Copied consumer layouts use validate-consumer.js, not this classifier.
  * This script is the MACHINE IMPLEMENTATION of the catalog in
  * guidelines/04-validation.md, under the contract of guidelines/02-document-contract.md.
  * Repo precedence (guidelines/00): contract 02 > guideline 04 > this tool.
@@ -43,7 +45,12 @@ const path = require('path');
 // ----------------------------- Configuration ------------------------------
 
 const ROOT = __dirname; // repo root = directory containing validate.js
-const WRITE_MODE = process.argv.slice(2).includes('--write');
+const ARGS = process.argv.slice(2);
+if (ARGS.length > 1 || (ARGS.length === 1 && ARGS[0] !== '--write')) {
+  process.stderr.write('Usage: node validate.js [--write]\nOnly this methodology-reference corpus is supported; use validate-consumer.js --root <project> for a consumer.\n');
+  process.exit(2); // reject before any reads or generated-region writes
+}
+const WRITE_MODE = ARGS.length === 1;
 const DASH = '\u2014';  // — in output; written as an escape so the source is pure ASCII
 const ELL = '\u2026';   // … in secret redaction sketches
 

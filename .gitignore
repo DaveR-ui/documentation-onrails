@@ -1,6 +1,9 @@
 .opencode/
 opencode.json
 
+# Isolated validator test fixtures (created and cleaned by node:test).
+/.validator-test-temp-*/
+
 # OS junk
 .DS_Store
 ._*

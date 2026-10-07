@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-09-12
+last_updated: 2026-10-07
 status: active
 description: How to start and maintain docs/project.md — the canonical agent-facing entry point: section anatomy, the Slices routing table, bootstrap order and update cadence.
 tags: [project-md, entry-point, slices, routing, bootstrap]
-version: 1.4
+version: 1.5
 related:
 - 07-agent-consumption
 - 01-structure
@@ -26,12 +26,19 @@ delegation.
 
 ## Solution
 
-`docs/project.md` is the **canonical entry point, loaded into every agent session** (see
+`docs/project.md` is the **canonical consumer-project entry point, explicitly read when
+project context is needed** (see
 [07-agent-consumption.md](07-agent-consumption.md) for the wiring). It is not a README: it is a
 contract with fixed sections whose shape downstream consumers rely on. Depth does not live here —
 one topic per strategic doc in `docs/context/`, linked from the Context Index, and one procedure
-per protocol in `docs/protocols/`. Keep it short (~100–150 lines); its value is *being read whole,
-every session*.
+per protocol in `docs/protocols/`. Keep it short (~100–150 lines); its value is *being read whole*
+when requested, not being assumed to arrive through ambient auto-loading.
+
+This is a consumer-project contract, not a requirement to invent project slices in a pure
+methodology repo. `docs/project.md` uses 02 §4 context metadata plus `doc_language` (see the
+template); strategic `docs/context/` files use context metadata, while procedures in
+`docs/protocols/` use 02 §1 note metadata. A consumer tag index, when present, is named
+`docs/tag-index.md`; this methodology repo's own generated index is root `tag-index.md`.
 
 ### Section anatomy (fixed order, fixed names)
 
@@ -115,6 +122,12 @@ flowchart TD
 Step 3 is bootstrapped *empirically*: recent change history is the best oracle of real
 boundaries. An empty Slices table is legal at birth; the "no match ⇒ propose row" rule fills it.
 
+Check the resulting consumer layout with `node validate-consumer.js --root <project>` from
+the methodology checkout, or invoke that script by its actual available path from elsewhere.
+This read-only checker is only the [documented subset](04-validation.md#consumer-layout-subset-checker-not-full-catalog-parity):
+`docs/project.md` is required; context/protocol directories and `docs/tag-index.md` may be
+absent initially. `validate.js` is for the methodology-reference corpus, not this layout.
+
 ### Update cadence
 
 - Structural change (new module, new tool, new command) updates `project.md` **in the same
@@ -134,8 +147,8 @@ system that "keeps misunderstanding the project".
 
 As a store for strategic reasoning (that's `docs/context/`), for decision history (that's ADRs —
 git holds the rest, see [08-brownfield.md](08-brownfield.md)), or as the only doc of a large
-system (the entry point must stay short enough to be
-omnipresent; depth must be on-demand).
+system (the entry point must stay short enough to be read whole on demand; depth remains in
+separate docs).
 
 ## Examples
 

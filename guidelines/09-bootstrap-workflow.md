@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-09-12
+last_updated: 2026-10-07
 status: active
 description: The agent bootstrap runbook — ordered steps that chain guidelines 00–08 and the protocols into one executable deployment of a corpus's base documentation, with a greenfield/brownfield branch.
 tags: [bootstrap, workflow, runbook, agents]
-version: 1.3
+version: 1.4
 related: [00-core-principles, 08-brownfield, bootstrap-protocol]
 ---
 
@@ -37,6 +37,16 @@ restate them.
 | 6 | If an agent will operate in this repo: create `docs/project.md`, audit the query loop. | [06-project-md.md](06-project-md.md), [05-agent-navigation.md](05-agent-navigation.md) | every note reachable in ≤ 3 hops from README |
 | 7 | Wire the docs↔machine interface: load tiers, wiring rules. | [07-agent-consumption.md](07-agent-consumption.md) | no dead anchors |
 | 8 | Steady state: the contract applies to new and touched files; decisions append as ADRs under `adrs/`; missing areas close via 08's gap-close loop. | [03-lifecycle-and-generated-files.md](03-lifecycle-and-generated-files.md), [08-brownfield.md](08-brownfield.md) | review clean against the catalog |
+
+The sequence above is unchanged. Select tooling for the layout, not just the working directory:
+`node validate.js` and `node validate.js --write` apply only to this methodology-reference
+corpus, rooted at the script directory. A consumer's Step 6 layout uses
+`node validate-consumer.js --root <project>` from the methodology checkout, or the actual
+available path to that script elsewhere — do not assume bootstrap copied it locally.
+The consumer checker is read-only and only the [subset described in 04](04-validation.md#consumer-layout-subset-checker-not-full-catalog-parity);
+the manual review remains necessary. Consumer generated tag navigation is canonical
+`docs/tag-index.md` (optional at bootstrap), not this methodology repo's root `tag-index.md`.
+This pure-methodology repo does not itself need `docs/project.md` or project slice routing.
 
 ```mermaid
 flowchart TD

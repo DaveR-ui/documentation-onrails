@@ -9,7 +9,7 @@ aliases:
 related:
 - 09-bootstrap-workflow
 moved_from: [checklists/bootstrap-checklist.md]
-version: 1.6
+version: 1.7
 status: active
 ---
 
@@ -45,6 +45,14 @@ Order matters: each step makes the next one checkable.
 - [ ] Calibrate: walk it against the corpus *as it exists* and demand zero gaps — or write down, explicitly, what you tolerate (accepted debt).
 - [ ] Make the walk a step of every merge the day it catches a real error you agree with.
 - [ ] Walk the catalog with code where it exists: `node validate.js` (errors exit 1).
+
+Those root commands target this methodology-reference corpus only, not a copied consumer
+layout. For consumer `docs/project.md`, `docs/context/` and `docs/protocols/`, invoke the
+read-only subset checker as `node validate-consumer.js --root <project>` from the methodology
+checkout, or use its actual available script path from elsewhere. It is not implicitly copied
+by bootstrap and does not replace the manual catalog walk (see [04](../guidelines/04-validation.md)).
+Consumer tag navigation, when present, is `docs/tag-index.md`; optional directories/index may
+be absent at bootstrap, but linked targets must exist and the project entry is required.
 
 **Agent-readiness (skip only if this stays a human-only corpus for now)**
 - [ ] Query path is read-only; sandbox rejects absolute paths / `..` / symlink escapes.

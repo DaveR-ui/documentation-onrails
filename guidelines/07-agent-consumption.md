@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-09-12
+last_updated: 2026-10-07
 status: active
 description: The docs-machine interface — the five load tiers and five wiring rules that make a documentation corpus actionable for an automated reader, with one reference implementation shown as an explicit conditional.
 tags: [agents, interface, wiring, delegation, consumption-tiers]
-version: 1.1
+version: 1.2
 related:
 - 06-project-md
 - 05-agent-navigation
@@ -33,7 +33,7 @@ different budget and rot profile:
 | Tier | Load semantics | Budget rule |
 |---|---|---|
 | **Runtime config** | Declares the wiring itself: which docs are injected, which tools/servers exist, which paths are referenced. | Knobs only — no prose. |
-| **Always-loaded** | In every session's context (the entry-point doc, §2). | Must stay short enough to be read whole — depth here is sabotage. |
+| **Always-loaded** | In every session's context, only for artifacts explicitly configured for injection. | Must stay short enough to be read whole — depth here is sabotage. |
 | **Read-every-turn** | A ritual re-anchored at the start of each turn (the behavior rules). | Restates, never duplicates — anchors into the protocol tier. |
 | **Looked-up on demand** | Strategic docs, indexes, details — fetched by path when a task touches them. | Unlimited depth; the cost model is *per lookup*, so one topic per file pays off. |
 | **Machine contracts** | Structured returns for handoffs between components (JSON/schemas), never prose. | A handoff you can't validate is a handoff that silently degrades. |
@@ -71,6 +71,11 @@ both stages consult**:
 5. **Failure is loud by contract.** A broken consumer component must report and stop; absorbing
    the failure with a workaround hides a broken runtime that degrades every session unobserved.
 
+Technical role prompts point to their **owned exact-path language baselines and project
+context**, read on demand, rather than copying stack knowledge into each prompt. Distinguish
+that technical duplication from intentional safety-reminder repetition: repeating a critical
+safety boundary can be deliberate defense, not a second technical source of truth.
+
 ### 4. Changes to the wiring are the highest-leverage edits
 
 Interface files (prompts, protocols, config) propagate to every downstream session — and they're
@@ -89,11 +94,30 @@ flowchart LR
 
 - Runtime config → the agent runtime's config file (`default_agent`, an
   instructions/context-injection list, MCP servers, ...).
-- Always-loaded → `docs/project.md` + the prompt-routing protocol.
+- Always-loaded → only the runtime's configured instructions; neither the project entry point
+  nor another protocol is assumed to be ambiently injected.
 - Read-every-turn → the dispatch workflow enforcing the *interpret-first hard gate*.
-- Looked-up → `docs/context/*.md`, `docs/protocols/*.md`, the tag index.
+- Looked-up → explicitly read the consumer's exact `docs/project.md` path when project context
+  is needed, then selected `docs/context/*.md`, `docs/protocols/*.md` and, if present,
+  `docs/tag-index.md`. Resolve paths against the consumer repository, not the agent-system root.
 - Machine contracts → subagent prompts + schemas (routing packet, agent snapshot).
 - Rule 5 → the blocked-delegation STOP protocol; Rule 2 → the skill-loading contract.
+
+In this reference system, `output_schema` is a declared return convention, **not runtime
+enforcement**. The existing caller duty remains owned by `agents/orchestrator.md` (Hard Limits);
+the behavior explanation belongs to `protocols/subagent-spec-template.md` (schema bridge).
+This methodology does not create a second normative agent duty. Resolve these exact paths by
+joining them to the **agent-system root injected at runtime** — never assume they are relative
+to the consumer checkout, and never commit a machine-specific absolute root.
+
+An optional caller-side capability is `scripts/check-subagent-return.py`, resolved through
+that same injected root. It assists the manual caller schema-assessment; it does not turn
+`output_schema` into a runtime feature or replace the owned contract. The shared contract
+concept is: validate the declared return without coercion; an invalid return permits **one
+capped repair** (one re-invoke, then assess again), not an unbounded retry loop or reinterpretation
+of raw text. Missing/unreadable schemas, unsupported checker capability or infrastructure
+failure are **cannot-verify, never pass**. Consult the owning agent-system files for the actual
+checker interface and caller procedure; do not copy that procedure here.
 
 Everything else in this guide stands without that system: a CI script that greps the Slices
 table, or an MCP server answering from `docs/context/` / `docs/protocols/`, obeys the same five rules.
@@ -111,9 +135,10 @@ in the always-loaded tier "so agents have it" breaks the budget rule; on-demand 
 
 ## Examples
 
-One production wiring (an instance, not the rule): the runtime config injects the entry point
-plus one protocol; a dispatch ritual re-anchors the gate each turn; every subagent return is
-schema-bound. The abstract shape — tiers, two stages, five rules — is what generalizes.
+One production wiring (an instance, not the rule): configured runtime instructions identify
+the roots; a dispatch ritual re-anchors the gate each turn; project context and language baselines
+are explicitly read by exact path on demand; declared subagent returns are manually assessed
+against their schemas. The abstract shape — tiers, two stages, five rules — is what generalizes.
 
 ## Common mistakes
 

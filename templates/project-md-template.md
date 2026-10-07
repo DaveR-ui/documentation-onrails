@@ -10,7 +10,7 @@ aliases:
 related:
 - 06-project-md
 - document-template
-version: 1.2
+version: 1.3
 status: active
 ---
 
@@ -30,7 +30,7 @@ Copy the fenced skeleton below as `docs/project.md`. It carries the **context-do
 entry-point-only key `doc_language`, and **nine fixed sections in fixed order, fixed names**:
 Overview, Technology Stack, Slices, Commands, Repository Structure, Key Conventions, Domain
 Entities, Context Index, Common Lookups. Keep it short (~100–150 lines) — its value is being
-read whole, every session; depth lives in `docs/context/` and procedures in `docs/protocols/`,
+explicitly read whole when project context is needed; depth lives in `docs/context/` and procedures in `docs/protocols/`,
 linked from the Context Index.
 
 ## When to use

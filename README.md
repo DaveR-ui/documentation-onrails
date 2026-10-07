@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-09-12
+last_updated: 2026-10-07
 status: active
 description: Agent-first guide to creating a project's base documentation — the distilled rules for organizing a Markdown corpus so humans and AI agents navigate it without a database.
 tags: [index, playbook, entry-point, documentation, agents]
-version: 1.4
+version: 1.5
 doc_language: en
 ---
 
@@ -39,7 +39,8 @@ and navigation are designed, not discovered.*
 | [guidelines/09-bootstrap-workflow.md](guidelines/09-bootstrap-workflow.md) | The agent bootstrap runbook: ordered steps chaining 00–08 + the protocols. | Operational starting point — before touching any file. |
 | [index.md](index.md) | Generated tree + stats (region `index`). Regenerate via `node validate.js --write`. | To see what the corpus holds; before a review. |
 | [tag-index.md](tag-index.md) | Generated tag → docs surface (region `tags`). | When the vocabulary is unknown — search by tag. |
-| [validate.js](validate.js) | The machine walk of 04's catalog: `node validate.js`, exit 1 on errors. | Before every merge, once tooling exists. |
+| [validate.js](validate.js) | Methodology-reference corpus validator: `node validate.js`, rooted at the script directory; only `--write` is accepted. | Before merging changes to this methodology repo. |
+| [validate-consumer.js](validate-consumer.js) | Read-only consumer-layout subset checker: `node validate-consumer.js --root <project>`, exit 1 on errors. Not full 04 parity. | After generating or changing a consumer project's docs; use the script's actual available path. |
 | [adrs/adr-index.md](adrs/adr-index.md) | Decision records (append-only), listed by the ADR hub. | When a rule's *why* is questioned. |
 | [templates/document-template.md](templates/document-template.md) | Copyable contract for a new note. | On every new note. |
 | [templates/adr-template.md](templates/adr-template.md) | Copyable shape for a decision record. | On every structural/schema decision. |
@@ -77,7 +78,9 @@ your-project/
 ├── README.md              ← you are here (the single entry point)
 ├── index.md               ← generated tree + stats — `node validate.js --write`
 ├── tag-index.md           ← generated tag → docs surface
-├── validate.js            ← the machine walk of 04's catalog; `node validate.js`, exit 1 on errors
+├── validate.js            ← methodology-reference corpus only; `node validate.js`
+├── validate-consumer.js   ← consumer-layout subset; read-only, explicit --root
+├── validate-consumer.test.js ← Node built-in tests; temporary consumer fixtures
 ├── adrs/                  ← decision records (append-only), one hub
 ├── guidelines/            ← the methodology (one topic per file, numbered reading order 00–09)
 ├── templates/             ← the schema layer applied to this repo itself
@@ -88,3 +91,17 @@ your-project/
 For a consumer project, the prescribed generated layout is `docs/project.md` plus two folders:
 `docs/context/` for strategic docs and `docs/protocols/` for procedures — see
 [guidelines/06-project-md.md](guidelines/06-project-md.md).
+
+This methodology repo intentionally has **no `docs/project.md` or project slice router**.
+Its root `tag-index.md` is distinct from a consumer's canonical `docs/tag-index.md`.
+`validate.js` uses this repo's classes and cannot validate a copied consumer layout, even
+if invoked from that project's working directory; `--root` is rejected before any writes.
+
+From this checkout, run `node validate-consumer.js --root <project>`. From elsewhere, run
+`node "<methodology-checkout>/validate-consumer.js" --root <project>` using the real available
+script path — bootstrap does not imply either validator was copied into the project.
+The consumer checker never writes or regenerates indexes. `docs/project.md` is required;
+`docs/context/`, `docs/protocols/` and `docs/tag-index.md` may be absent at bootstrap, but
+links to absent targets still fail. For the subset and limitations, see
+[guidelines/04-validation.md](guidelines/04-validation.md). Run its tests with
+`node --test validate-consumer.test.js`.
