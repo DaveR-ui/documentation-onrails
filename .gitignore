@@ -1,0 +1,15 @@
+.opencode/
+opencode.json
+
+# Isolated validator test fixtures (created and cleaned by node:test).
+/.validator-test-temp-*/
+
+# OS junk
+.DS_Store
+._*
+.Trashes
+.Spotlight-V100/
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/

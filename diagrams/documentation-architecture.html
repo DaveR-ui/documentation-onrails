@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Documentation Deployment Playbook — How It Works</title>
+<style>
+  /* Self-contained whiteboard diagram. Zero external resources:
+     no CDN fonts, no scripts, no remote css/images. file:// safe. */
+  :root{
+    --ink:#1f2937; --paper:#fdfcf7; --grid:#efe9dc;
+    --blue:#2563eb; --green:#16a34a; --red:#dc2626;
+    --purple:#7c3aed; --orange:#ea580c; --gray:#9ca3af;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--paper);}
+  body{
+    font-family:"Segoe Print","Bradley Hand","Comic Sans MS","Comic Sans",cursive;
+    color:var(--ink);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:26px 26px;
+  }
+  #canvas{position:relative; width:1400px; height:1180px; margin:0 auto;}
+  .box{
+    position:absolute; background:#fffdf6; border:2px solid var(--ink);
+    border-radius:14px; padding:9px 11px; font-size:12.5px; line-height:1.42;
+  }
+  .box b.t{display:block; font-size:14.5px; margin-bottom:3px;}
+  .box .sub{color:#4b5563;}
+  .box hr{border:none; border-top:1.5px dashed var(--gray); margin:5px 0;}
+  .b-blue{border-color:var(--blue);} .b-green{border-color:var(--green);}
+  .b-red{border-color:var(--red);}   .b-purple{border-color:var(--purple);}
+  .b-orange{border-color:var(--orange);} .b-gray{border-color:var(--gray);}
+  .dash{border-style:dashed;}
+  .sec{
+    position:absolute; font-size:23px; font-weight:bold; white-space:nowrap;
+    text-shadow:1px 1px 0 rgba(0,0,0,0.06);
+  }
+  .c-blue{color:var(--blue);} .c-green{color:var(--green);} .c-red{color:var(--red);}
+  .c-purple{color:var(--purple);} .c-orange{color:var(--orange);} .c-gray{color:#6b7280;}
+  #title{position:absolute; left:40px; top:14px; width:760px;}
+  #title h1{font-size:34px; transform:rotate(-0.7deg); letter-spacing:0.5px;}
+  #title p{font-size:15px; color:#4b5563; transform:rotate(-0.4deg); margin-top:2px;}
+  #svg{position:absolute; left:0; top:0; width:1400px; height:1180px; pointer-events:none;}
+  #svg text{font-family:"Segoe Print","Bradley Hand","Comic Sans MS","Comic Sans",cursive;
+            font-size:11px; font-weight:bold; fill:#374151;}
+  .li{margin-left:2px;}
+  .tiny{font-size:11px; color:#6b7280;}
+  pre.tree{font-family:ui-monospace,Consolas,monospace; font-size:10.5px; line-height:1.35;
+           white-space:pre; color:#374151;}
+  #footer{position:absolute; left:40px; top:1148px; font-size:11px; color:#6b7280;}
+  .rot-l{transform:rotate(-0.5deg);} .rot-r{transform:rotate(0.5deg);}
+</style>
+</head>
+<body>
+<div id="canvas">
+
+  <!-- ============ HEADER ============ -->
+  <div id="title">
+    <h1>Documentation Deployment Playbook</h1>
+    <p>files are the store · navigation is designed · the contract is checked · decisions are append-only</p>
+  </div>
+
+  <div class="box b-gray dash rot-r" style="left:1060px; top:14px; width:300px;">
+    <b class="t" style="color:#6b7280;">SYSTEM FACTS</b>
+    <span class="li">· <b>8</b> principles · <b>1</b> runbook (09)</span><br>
+    <span class="li">· <b>1</b> entry point · <b>1</b> hub per folder</span><br>
+    <span class="li">· <b>7+2</b> frontmatter keys · <b>7</b> sections</span><br>
+    <span class="li">· <b>9</b> errors + <b>3</b> warnings (review catalog)</span><br>
+    <span class="li">· <b>2</b> vocabularies, <b>1</b> resolver</span><br>
+    <span class="li">· review = checklists, not tools</span>
+  </div>
+
+  <!-- ============ SECTION HEADERS ============ -->
+  <div class="sec c-blue"   style="left:30px;   top:120px; transform:rotate(-0.6deg);">1. THE THREE LAYERS</div>
+  <div class="sec c-green"  style="left:360px;  top:120px; transform:rotate(0.5deg);">2. FOLDER ANATOMY</div>
+  <div class="sec c-purple" style="left:680px;  top:120px; transform:rotate(-0.5deg);">3. DOCUMENT CONTRACT</div>
+  <div class="sec c-orange" style="left:980px;  top:120px; transform:rotate(0.6deg);">4. GENERATED FILES</div>
+  <div class="sec c-red"    style="left:1230px; top:120px; transform:rotate(-0.5deg);">5. REVIEW</div>
+
+  <!-- ============ 1. LAYERS ============ -->
+  <div class="box b-blue rot-l" style="left:30px; top:162px; width:290px; height:78px;">
+    <b class="t">1 · RAW — unmanaged sources</b>
+    <span class="li sub">articles, transcripts, clippings — kept <b>outside</b> the served root</span>
+  </div>
+  <div class="box b-blue" style="left:30px; top:266px; width:290px; height:104px;">
+    <b class="t">2 · WIKI — the store</b>
+    <span class="li">curated notes, one topic per file</span><br>
+    <span class="li">folder hubs route every reader</span><br>
+    <span class="li sub">the only layer a query walks by default</span>
+  </div>
+  <div class="box b-blue dash rot-r" style="left:30px; top:396px; width:290px; height:88px;">
+    <b class="t">3 · SCHEMA — the rules</b>
+    <span class="li">templates + naming rules + review catalog</span><br>
+    <span class="li sub">a schema that is only prose is a wish</span>
+  </div>
+  <div class="box b-green" style="left:30px; top:520px; width:290px; height:118px;">
+    <b class="t">LIFECYCLE (a claim, not a mood)</b>
+    <span class="li"><b>draft → active → superseded → archived</b></span><br>
+    <span class="li"><b>active → expired → active</b> (renewed)</span><br>
+    <span class="li sub">supersede, don't rewrite: successor carries</span>
+    <span class="li sub"><b>supersedes: old-id</b> · ADRs are decision records</span>
+  </div>
+
+  <!-- ============ 2. ANATOMY ============ -->
+  <div class="box b-green" style="left:360px; top:162px; width:280px; height:340px;">
+    <b class="t">the tree is the table of contents</b>
+<pre class="tree">corpus/
+├── README.md      ← THE entry point
+├── index.md       ← generated (markers)
+├── templates/     ← schema layer
+├── checklists/
+├── topic/         ← stable nouns
+│   ├── topic-index.md  ← hub
+│   └── note.md
+└── diagrams/      ← derived (read-only)</pre>
+    <hr>
+    <span class="li">every reader path: <b>entry → hub → note</b></span><br>
+    <span class="li">≤ 3 hops or it doesn't exist</span><br>
+    <span class="li sub">2–7 topic folders beats 30 shallow ones</span>
+  </div>
+
+  <!-- ============ 3. CONTRACT ============ -->
+  <div class="box b-purple" style="left:680px; top:162px; width:260px; height:340px;">
+    <b class="t">every note = the template</b>
+    <span class="li"><b>frontmatter:</b> id · category · tags ·</span><br>
+    <span class="li">aliases · related · version · status</span><br>
+    <span class="li sub">+ optional supersedes / expires_at</span><br>
+    <span class="li sub">(present-but-blank = error)</span>
+    <hr>
+    <span class="li"><b>sections:</b> Problem · Solution ·</span><br>
+    <span class="li">When to use · When not to use ·</span><br>
+    <span class="li">Examples · Common mistakes · References</span>
+    <hr>
+    <span class="li"><b>dual vocabulary, one resolver:</b></span><br>
+    <span class="li">related → <b>ids</b> (payments-flow)</span><br>
+    <span class="li">[[links]] → <b>stems</b> ([[payments]])</span><br>
+    <span class="li sub">+ aliases · case-insensitive · everywhere</span>
+  </div>
+
+  <!-- ============ 4. GENERATED ============ -->
+  <div class="box b-orange" style="left:980px; top:162px; width:215px; height:230px;">
+    <b class="t">machine + human, one file</b>
+    <span class="li">&lt;!-- BEGIN GENERATED --&gt;</span><br>
+    <span class="li">regions rewritten by the generator;</span><br>
+    <span class="li">outside = human-owned</span>
+    <hr>
+    <span class="li"><b>write-if-diff</b> → byte-stable,</span><br>
+    <span class="li">committable, clean diffs</span>
+    <hr>
+    <span class="li">generated content: <b>rebuilt, never hand-patched</b></span>
+  </div>
+  <div class="box b-orange rot-l" style="left:980px; top:414px; width:215px; height:150px;">
+    <b class="t">checklists — the mechanism</b>
+    <span class="li">· new-note: walks one note</span><br>
+    <span class="li">· bootstrap: walks the corpus</span><br>
+    <span class="li">· every item objective</span><br>
+    <span class="li">· no tools required</span><br>
+    <span class="li sub">see guideline 04</span>
+  </div>
+
+  <!-- ============ 5. REVIEW ============ -->
+  <div class="box b-red" style="left:1230px; top:162px; width:160px; height:402px; font-size:11px;">
+    <b class="t">errors (block the merge)</b>
+    <span class="li"><b>metadata outside the contract</b></span><br>
+    <span class="li"><b>duplicate ids</b></span><br>
+    <span class="li"><b>dangling related target</b></span><br>
+    <span class="li"><b>dangling link</b></span><br>
+    <span class="li"><b>orphan note</b></span><br>
+    <span class="li"><b>missing from its hub</b></span><br>
+    <span class="li"><b>stale generated index</b></span><br>
+    <span class="li"><b>secret in prose</b></span>
+    <hr>
+    <b class="t">warnings (advisory)</b>
+    <span class="li"><b>no H1 title</b> · <b>category ≠ folder</b></span><br>
+    <span class="li"><b>near-duplicate body</b></span>
+    <hr>
+    <span class="li sub">walk it against the real</span>
+    <span class="li sub">corpus; tolerated gaps = debt</span>
+  </div>
+
+  <!-- ============ 6. AGENT LOOP ============ -->
+  <div class="sec c-green" style="left:30px; top:680px; transform:rotate(-0.4deg);">6. HOW AN AGENT READS IT (nothing but the filesystem)</div>
+
+  <div class="box b-green" style="left:30px; top:722px; width:195px; height:96px;">
+    <b class="t">read index.md</b>
+    <span class="li sub">the designed entry point —</span>
+    <span class="li sub">never guess paths</span>
+  </div>
+  <div class="box b-green" style="left:285px; top:722px; width:185px; height:96px;">
+    <b class="t">read the hub</b>
+    <span class="li sub">what belongs here,</span>
+    <span class="li sub">what's in here</span>
+  </div>
+  <div class="box b-green" style="left:530px; top:722px; width:195px; height:96px;">
+    <b class="t">grep tags / aliases</b>
+    <span class="li sub">vocabulary the question</span>
+    <span class="li sub">actually arrives in</span>
+  </div>
+  <div class="box b-green" style="left:785px; top:722px; width:195px; height:96px;">
+    <b class="t">read + follow links</b>
+    <span class="li sub">related · wikilinks ·</span>
+    <span class="li sub">backlinks via one resolver</span>
+  </div>
+  <div class="box b-green" style="left:1040px; top:722px; width:230px; height:96px;">
+    <b class="t">answer + citation</b>
+    <span class="li"><b>path#Lstart</b> via section outline</span><br>
+    <span class="li sub">or: "corpus does not cover this"</span>
+  </div>
+
+  <div class="box b-red dash rot-r" style="left:30px; top:866px; width:600px; height:96px;">
+    <b class="t" style="color:var(--red);">GUARDRAILS — the loop only holds if these do</b>
+    <span class="li">· corpus mounted <b>read-only</b> for query tools — "query tools never write"</span><br>
+    <span class="li">· sandbox: reject absolute paths · <b>..</b> · symlink escapes</span><br>
+    <span class="li">· not-found = <b>null / []</b> (data), misuse = isError (self-correctable) · staleness visible (footer dates)</span>
+  </div>
+
+  <div class="box b-purple rot-l" style="left:680px; top:866px; width:590px; height:96px;">
+    <b class="t" style="color:var(--purple);">BROWNFIELD & THE RUNBOOK — same order, one sequence</b>
+    <span class="li">· <b>08</b>: slice + one generalities doc per slice → <b>2</b> entry point (Slices table)</span><br>
+    <span class="li">· <b>3</b> ratchet: contract on new/touched only · <b>git = history</b> · index from day one</span><br>
+    <span class="li">· <b>09</b> runbook: steps 1–8 chain guidelines + checklists — slices before process</span>
+  </div>
+
+  <div class="box b-gray" style="left:30px; top:996px; width:1240px; height:110px;">
+    <b class="t">THE EIGHT PRINCIPLES (one line each)</b>
+    <span class="li">1 files ARE the store — generated aids rebuild · 2 navigation designed top-down · 3 contracts over conventions · 4 one topic per file, one language per corpus</span><br>
+    <span class="li">5 two vocabularies, one resolver · 6 decision records append-only · 7 machine + human content coexist via markers · 8 health is a routine review</span><br>
+    <span class="li sub">deploy order: <b>09</b> runbook → 01 tree → 02 first note → 03 hub + index → 04 review → 05/06/07 wiring → 08 if the repo predates its docs</span>
+  </div>
+
+  <!-- ============ SVG ARROWS ============ -->
+  <svg id="svg">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+      </marker>
+      <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+      </marker>
+    </defs>
+    <!-- raw -> wiki -->
+    <path d="M175,240 L175,266" stroke="#374151" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <text x="183" y="258">distill</text>
+    <!-- schema checks wiki -->
+    <path d="M320,440 Q345,370 322,320" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ar)"/>
+    <text x="330" y="390">enforces</text>
+    <!-- anatomy -> contract -->
+    <path d="M640,300 Q662,300 680,300" stroke="#374151" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <!-- contract -> review -->
+    <path d="M940,300 Q1085,90 1300,160" stroke="#dc2626" stroke-width="2" stroke-dasharray="7 5" fill="none" marker-end="url(#arR)"/>
+    <text x="1050" y="95" fill="#dc2626">checked by</text>
+    <!-- loop chain -->
+    <path d="M225,770 L285,770" stroke="#16a34a" stroke-width="2.5" fill="none" marker-end="url(#ar)"/>
+    <path d="M470,770 L530,770" stroke="#16a34a" stroke-width="2.5" fill="none" marker-end="url(#ar)"/>
+    <path d="M725,770 L785,770" stroke="#16a34a" stroke-width="2.5" fill="none" marker-end="url(#ar)"/>
+    <path d="M980,770 L1040,770" stroke="#16a34a" stroke-width="2.5" fill="none" marker-end="url(#ar)"/>
+    <!-- hub in anatomy feeds loop -->
+    <path d="M500,502 Q460,620 250,722" stroke="#16a34a" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ar)"/>
+    <text x="330" y="620" fill="#16a34a">the layout IS the loop</text>
+    <!-- review feeds the brownfield/runbook box -->
+    <path d="M1300,564 Q1300,740 1272,890" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#arR)"/>
+  </svg>
+
+  <div id="footer">derived artifact — read-only view of this repo's guidelines/* · never a source of truth (principle: diagrams are referenced, never referenced-from) · 2026-09-06</div>
+</div>
+</body>
+</html>
